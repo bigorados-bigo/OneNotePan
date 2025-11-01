@@ -19,8 +19,14 @@ An AutoHotkey v2 script that enables intuitive pan/scroll functionality in OneNo
 
 1. Download and install [AutoHotkey v2.0](https://www.autohotkey.com/)
 2. Download `OneNotePan.ahk` from this repository
-3. Double-click the script to run it
-4. (Optional) Add the script to your Windows startup folder to run automatically:
+3. **Configure OneNote Shortcuts** (Important):
+   - Open OneNote
+   - Go to File → Options → Customize Ribbon → Keyboard Shortcuts (or use the "Customize..." button)
+   - Bind **Alt + 1** to the **Pan Tool**
+   - Bind **Alt + 2** to the **Selection Tool** (default mouse)
+   - Click "Assign" for each binding and save
+4. Double-click the script to run it
+5. (Optional) Add the script to your Windows startup folder to run automatically:
    - Press `Win + R`, type `shell:startup`, and press Enter
    - Create a shortcut to `OneNotePan.ahk` in the startup folder
 

@@ -4,25 +4,97 @@
 
 #HotIf WinActive("ahk_exe ONENOTE.EXE") && MouseIsOverOneNote()
 
-*MButton::StartPanning("MButton")
-*XButton1::StartPanning("XButton1")
+~*MButton::HandlePanButtonDown("MButton")
+~*XButton1::HandlePanButtonDown("XButton1")
+~*MButton Up::HandlePanButtonUp("MButton")
+~*XButton1 Up::HandlePanButtonUp("XButton1")
 
 #HotIf
 
-*MButton Up::StopPanning("MButton")
-*XButton1 Up::StopPanning("XButton1")
-
 global isPanning := false
 global panButton := ""
-global panMonitorInterval := 50
+global panMonitorInterval := 10
+global panHoldDelay := 20
+global panPending := false
+global panTimer := 0
 ; global debugLogging := true
 ; global logFilePath := A_ScriptDir "\OneNotePan.log"
 
 ; DebugLog("OneNotePan script loaded")
 
+HandlePanButtonDown(button) {
+    QueuePan(button)
+}
+
+HandlePanButtonUp(button) {
+    global panTimer
+    global panButton
+    global panPending
+    global isPanning
+
+    if panTimer {
+        SetTimer(panTimer, 0)
+        panTimer := 0
+    }
+
+    if isPanning && panButton = button {
+        StopPanning("release")
+        return
+    }
+
+    if panPending && panButton = button {
+        panPending := false
+        panButton := ""
+        return
+    }
+
+    ; If we get here, no pan was active and no tap was pending.
+}
+
+QueuePan(button) {
+    global panTimer
+    global panButton
+    global panPending
+    global panHoldDelay
+    global isPanning
+
+    if isPanning
+        return
+
+    panButton := button
+    panPending := true
+
+    if panTimer
+        SetTimer(panTimer, 0)
+
+    panTimer := StartPanFromHold.Bind(button)
+    SetTimer(panTimer, -panHoldDelay)
+}
+
+StartPanFromHold(button) {
+    global panPending
+    global panTimer
+    global panButton
+
+    panTimer := 0
+
+    if !panPending
+        return
+
+    if panButton != button
+        return
+
+    if !GetKeyState(button, "P")
+        return
+
+    panPending := false
+    StartPanning(button)
+}
+
 StartPanning(button) {
     global isPanning
     global panButton
+    global panPending
     if isPanning
         return
 
@@ -38,6 +110,8 @@ StartPanning(button) {
 StopPanning(button := "") {
     global isPanning
     global panButton
+    global panPending
+    global panTimer
     if !isPanning
         return
 
@@ -48,6 +122,11 @@ StopPanning(button := "") {
     Sleep(10)    ; allow OneNote to register the release before resetting the tool
     Send("!2")
     panButton := ""
+    panPending := false
+    if panTimer {
+        SetTimer(panTimer, 0)
+        panTimer := 0
+    }
 }
 
 CheckPanContext() {
